@@ -108,7 +108,9 @@ h2{font:700 1.1rem var(--display);margin:0}
 .seg button{flex:1;font:600 .85rem var(--body);color:var(--muted);background:none;border:0;border-radius:9px;padding:8px}
 .seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 footer{text-align:center;font-size:.75rem;color:var(--muted)}
+.cols,.col-a,.col-b,.col-more{display:flex;flex-direction:column;gap:16px}
 @media (max-width:380px){.big{font-size:2.9rem}.like b{font-size:1.1rem}}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .price-row{align-items:center}
 .cur-sel{font:700 .9rem var(--body);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:6px 8px;max-width:110px;flex:none}
@@ -122,7 +124,40 @@ footer{text-align:center;font-size:.75rem;color:var(--muted)}
 .pct{display:flex;align-items:center;gap:6px}
 .pct input{flex:1}
 .pct span{font:700 1rem var(--mono);color:var(--muted)}
+.steps{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px}
+.steps b{display:block}
+.guide-links{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.guide-links a{display:block;padding:10px 0;border-bottom:1px solid var(--line);color:var(--ink);font-weight:600;text-decoration:none}
+.guide-links li:last-child a{border-bottom:0}
+.guide-links a:hover{color:var(--accent)}
+.foot-nav{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 14px;margin-bottom:6px}
+.foot-nav a{color:var(--muted)}
 .basis{display:inline-block;font:700 .66rem var(--body);letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.12);color:var(--hero-ink);border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:2px}
+/* Tablet: a wider single column, with the info cards side by side */
+@media (min-width:640px){
+  body{padding-inline:24px}
+  .app{max-width:640px;gap:20px}
+  .cols,.col-a,.col-b{gap:20px}
+  .col-more{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+  .col-more>:first-child{grid-column:1/-1}
+  .intro{font-size:1.5rem}
+}
+/* Desktop: price and answer on the left, wishlist and pay settings on the right */
+@media (min-width:960px){
+  body{padding-block:32px 64px}
+  .app{max-width:1120px;gap:24px}
+  .brand h1{font-size:1.9rem}
+  .intro{font-size:2rem;max-width:30ch}
+  .intro span{font-size:1rem}
+  .cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:start}
+  .col-more{grid-template-columns:repeat(3,1fr);gap:24px}
+  .col-more>:first-child{grid-column:auto}
+  .big{font-size:4.4rem}
+  .card{padding:22px}
+  .hero{padding:28px}
+  .presets{flex-wrap:wrap;overflow:visible}
+  .col-b #paycard{order:-1}
+}
 </style>
 </head>
 <body>
@@ -137,6 +172,8 @@ footer{text-align:center;font-size:.75rem;color:var(--muted)}
 
   <p class="intro">How long do you have to work to pay for it?<span>Type a price and your pay. We'll turn the price into hours of your work.</span></p>
 
+  <div class="cols">
+  <div class="col-a">
   <section class="card" aria-label="Item">
     <span class="label">What do you want to buy?</span>
     <input class="name-in" id="name" type="text" placeholder="Item name (optional)" value="New sneakers">
@@ -177,6 +214,8 @@ footer{text-align:center;font-size:.75rem;color:var(--muted)}
     </div>
     <p class="save-out" id="saveOut"></p>
   </section>
+  </div>
+  <div class="col-b">
 
   <section class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2>My wishlist</h2><span class="label" id="count"></span></div>
@@ -202,7 +241,44 @@ footer{text-align:center;font-size:.75rem;color:var(--muted)}
     <p class="note">Leave take-home % empty to use your gross pay. To use pay after tax, enter the share you keep, for example 80 if 20% goes to tax and deductions.</p>
     <p class="note">Example values shown. <span id="rateNote">Exchange rates are built in from Oct 7, 2026.</span> You can edit any rate above. Your settings stay on this device.</p>
   </section>
-  <footer>HoursToPay.com · Think before you check out.</footer>
+  </div>
+  </div>
+  <div class="col-more">
+  <section class="card">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><b>Turn your pay into an hourly rate.</b> Monthly pay is divided by your workdays and hours. Daily pay is divided by your hours.</li>
+      <li><b>Use what you keep, if you like.</b> Add your take-home % and the rate uses your pay after tax.</li>
+      <li><b>Divide the price by that rate.</b> The answer is how long you work to pay for it.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>Guides</h2>
+    <ul class="guide-links">
+      <li><a href="guides/real-hourly-wage.html">How to work out your real hourly wage</a></li>
+      <li><a href="guides/take-home-percentage.html">How to find your take-home percentage</a></li>
+      <li><a href="guides/monthly-salary-to-hourly.html">Monthly salary to hourly: formula and table</a></li>
+      <li><a href="guides/24-hour-rule.html">The 24-hour rule: when to wait before you buy</a></li>
+      <li><a href="guides/small-daily-buys.html">What small daily buys cost you in a year</a></li>
+      <li><a href="guides/index.html">All guides</a></li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Prices and wages in work hours</h2>
+    <ul class="guide-links">
+      <li><a href="prices/iphone-17-philippines.html">How many hours of work is an iPhone 17?</a></li>
+      <li><a href="prices/index.html">Phones, consoles and subscriptions in work hours</a></li>
+      <li><a href="wages/index.html">Minimum wages and salaries by country</a></li>
+    </ul>
+  </section>
+  </div>
+
+  <footer>
+    <nav class="foot-nav" aria-label="Footer"><a href="guides/index.html">Guides</a><a href="prices/index.html">Prices</a><a href="wages/index.html">Wages</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="contact.html">Contact</a></nav>
+    HoursToPay · Think before you check out.
+  </footer>
 </div>
 
 <script>
@@ -293,7 +369,7 @@ function calc(){
   const sd=+$("saveDay").value;$("saveAmt").textContent=`${money(sd)}/day`;
   const n=Math.ceil(price/sd),date=new Date(Date.now()+n*864e5);
   $("saveOut").innerHTML=`Save <b>${money(sd)}</b> a day and you can buy it in <b>${n.toLocaleString()} day${n>1?"s":""}</b>, around <b>${date.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</b>.`;
-  store.set("pay",{net:$("net").value,pay:$("pay").value,hours:$("hours").value,days:$("days").value,pTea:$("pTea").value,pMeal:$("pMeal").value});
+  if(!fromLink)store.set("pay",{net:$("net").value,pay:$("pay").value,hours:$("hours").value,days:$("days").value,pTea:$("pTea").value,pMeal:$("pMeal").value});
   renderWish();
 }
 function renderWish(){
@@ -311,6 +387,16 @@ function renderWish(){
 fillSelects();
 const saved=store.get("pay",null);
 if(saved){["pay","net","hours","days","pTea","pMeal"].forEach(k=>{if(saved[k]!=null)$(k).value=saved[k]})}
+// Links from the content pages can prefill the calculator: ?price=69990&cur=PHP&item=iPhone+17&pay=755&per=day&hours=8
+// Pay from a link is not saved over the visitor's own settings unless they edit it.
+let fromLink=false;
+{const q=new URLSearchParams(location.search),qc=(q.get("cur")||"").toUpperCase(),qp=+q.get("pay"),qh=+q.get("hours");
+  if(RATES[qc]&&qc!==itemCur){if(!(+q.get("price")>0))$("price").value=nice(convert(+$("price").value||0,itemCur,qc));if(qp>0&&qc!==my){my=qc;applyCurrencyDefaults(my)}itemCur=qc}
+  if(qp>0){fromLink=true;$("pay").value=qp;$("net").value="";if(["hour","day","month"].includes(q.get("per")))per=q.get("per");if(qh>0&&qh<=24)$("hours").value=qh}
+  if(+q.get("price")>0)$("price").value=+q.get("price");
+  if(q.get("item"))$("name").value=q.get("item").slice(0,60);
+  $("myCur").value=my;$("itemCur").value=itemCur;}
+$("paycard").addEventListener("input",()=>{fromLink=false},true);
 document.querySelectorAll("#seg button").forEach(b=>b.classList.toggle("on",b.dataset.v===per));
 setCurrencyUI();renderPresets();setupSlider();calc();
 

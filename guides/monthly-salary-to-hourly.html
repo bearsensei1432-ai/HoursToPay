@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monthly salary to hourly: the formula and a quick table · HoursToPay</title>
+<meta name="description" content="Convert a monthly or yearly salary into an hourly rate, with ready-made tables that work in any currency.">
+<meta property="og:title" content="Monthly salary to hourly: the formula and a quick table">
+<meta property="og:description" content="Convert a monthly or yearly salary into an hourly rate, with ready-made tables that work in any currency.">
+<meta property="og:type" content="article">
+<meta name="theme-color" content="#0f3d36">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='8' y='8' width='48' height='48' rx='14' fill='%23ff7a3d' transform='rotate(-6 32 32)'/%3E%3Cpath d='M32 19v13l8 5' stroke='%23fff' stroke-width='6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="../index.html"><span class="logo" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 5v7l4.5 3" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></svg></span><b>HoursToPay</b></a>
+    <nav aria-label="Main"><a href="../index.html">Calculator</a><a href="../guides/index.html" aria-current="page">Guides</a><a href="../prices/index.html">Prices</a><a href="../wages/index.html">Wages</a><a href="../about.html">About</a></nav>
+  </header>
+  <article>
+<p class="kicker">Guide</p>
+<h1>Monthly salary to hourly: the formula and a quick table</h1>
+<p class="lede">To compare prices, job offers or side gigs, you need your pay per hour. Here is how to convert a monthly or yearly salary, with tables you can read straight off. The numbers work in any currency.</p>
+
+<h2>The formulas</h2>
+<p class="formula">hourly = monthly salary ÷ (workdays per month × hours per day)</p>
+<p class="formula">hourly = yearly salary ÷ (weeks per year × hours per week)</p>
+<p>Two conventions are common for a full-time month:</p>
+<ul>
+<li><b>22 days × 8 hours = 176 hours.</b> Common where pay is quoted per month, such as the Philippines and much of Asia.</li>
+<li><b>40 hours × 52 weeks ÷ 12 = about 173.3 hours.</b> Common where pay is quoted per year, such as the US. A full year is 2,080 hours.</li>
+</ul>
+<p>If you work six days a week or long shifts, use your own numbers. The difference adds up quickly.</p>
+
+<h2>Try it</h2>
+<div class="mini" id="mini">
+  <div><label for="m-amt">Salary</label><input id="m-amt" type="number" inputmode="decimal" min="0" value="25000"></div>
+  <div><label for="m-per">Paid per</label><select id="m-per"><option value="month">Month</option><option value="year">Year</option></select></div>
+  <div><label for="m-days">Workdays per month</label><input id="m-days" type="number" min="1" max="31" value="22"></div>
+  <div><label for="m-hrs">Hours per day</label><input id="m-hrs" type="number" min="1" max="24" step="any" value="8"></div>
+  <output id="m-out" for="m-amt m-per m-days m-hrs"></output>
+</div>
+<script>
+(()=>{const $=id=>document.getElementById(id);
+function go(){const a=+$("m-amt").value||0,y=$("m-per").value==="year",d=+$("m-days").value||22,h=+$("m-hrs").value||8;
+const mo=y?a/12:a,hr=mo/(d*h),f=n=>n.toLocaleString(undefined,{maximumFractionDigits:2,minimumFractionDigits:2});
+$("m-out").textContent=a?`That is ${f(hr)} per hour and ${f(mo/d)} per workday.`:"Enter a salary.";}
+["m-amt","m-per","m-days","m-hrs"].forEach(id=>$(id).addEventListener("input",go));go();})();
+</script>
+
+<h2>Monthly salary to hourly</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Per month</th><th>Per day (22 days)</th><th>Per hour (176 h)</th><th>Per hour (173.3 h)</th></tr></thead>
+<tbody><tr><td>10,000</td><td>454.55</td><td>56.82</td><td>57.69</td></tr><tr><td>15,000</td><td>681.82</td><td>85.23</td><td>86.54</td></tr><tr><td>20,000</td><td>909.09</td><td>113.64</td><td>115.38</td></tr><tr><td>25,000</td><td>1,136.36</td><td>142.05</td><td>144.23</td></tr><tr><td>30,000</td><td>1,363.64</td><td>170.45</td><td>173.08</td></tr><tr><td>40,000</td><td>1,818.18</td><td>227.27</td><td>230.77</td></tr><tr><td>50,000</td><td>2,272.73</td><td>284.09</td><td>288.46</td></tr><tr><td>75,000</td><td>3,409.09</td><td>426.14</td><td>432.69</td></tr><tr><td>100,000</td><td>4,545.45</td><td>568.18</td><td>576.92</td></tr></tbody></table></div>
+
+<h2>Yearly salary to hourly</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Per year</th><th>Per month</th><th>Per hour (2,080 h)</th></tr></thead>
+<tbody><tr><td>20,000</td><td>1,666.67</td><td>9.62</td></tr><tr><td>30,000</td><td>2,500.00</td><td>14.42</td></tr><tr><td>40,000</td><td>3,333.33</td><td>19.23</td></tr><tr><td>50,000</td><td>4,166.67</td><td>24.04</td></tr><tr><td>60,000</td><td>5,000.00</td><td>28.85</td></tr><tr><td>75,000</td><td>6,250.00</td><td>36.06</td></tr><tr><td>100,000</td><td>8,333.33</td><td>48.08</td></tr><tr><td>150,000</td><td>12,500.00</td><td>72.12</td></tr></tbody></table></div>
+
+<h2>Before tax or after?</h2>
+<p>These tables use gross pay, the figure on your contract. For deciding whether something is worth buying, the rate after tax is more useful, because that is the money you spend. Multiply any hourly figure by your take-home percentage. See <a href="take-home-percentage.html">how to find your take-home percentage</a>.</p>
+  </article>
+  <aside class="cta">
+    <div><strong>See what it costs you in work hours</strong>
+    <p>Type any price and your pay. The calculator shows the hours, in your currency.</p></div>
+    <a class="btn" href="../index.html">Open the calculator</a>
+  </aside>
+  <footer>
+    <nav aria-label="Footer"><a href="../index.html">Calculator</a><a href="../guides/index.html">Guides</a><a href="../prices/index.html">Prices</a><a href="../wages/index.html">Wages</a><a href="../about.html">About</a><a href="../privacy.html">Privacy</a><a href="../contact.html">Contact</a></nav>
+    HoursToPay · Think before you check out.
+  </footer>
+</div>
+</body>
+</html>
