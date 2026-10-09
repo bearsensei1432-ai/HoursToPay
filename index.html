@@ -116,6 +116,19 @@ h2{font:700 1.1rem var(--display);margin:0}
 .seg button{flex:1;font:600 .85rem var(--body);color:var(--muted);background:none;border:0;border-radius:9px;padding:8px}
 .seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 footer{text-align:center;font-size:.75rem;color:var(--muted)}
+.seg-sm button{font-size:.8rem;padding:7px 4px}
+.per-lbl{font:700 1rem var(--body);color:var(--muted);white-space:nowrap;flex:none}
+.share-btn{align-self:flex-start;margin-top:12px;font:700 .9rem var(--body);color:var(--hero-ink);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:9px 16px}
+.share-btn:hover{background:rgba(255,255,255,.18)}
+.share-btn::before{content:"↗ "}
+dialog{border:0;border-radius:var(--r);padding:20px;background:var(--surface);color:var(--ink);width:min(420px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto}
+dialog::backdrop{background:rgba(5,20,18,.6)}
+dialog h2{margin-bottom:12px}
+dialog img{display:block;width:100%;max-width:300px;margin:0 auto 14px;border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.15)}
+.dlg-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dlg-btns .add{text-decoration:none;text-align:center;flex:1 1 100%}
+.dlg-btns .chip-btn{flex:1;padding:10px 12px}
+dialog .note{margin-top:12px}
 .cols,.col-a,.col-b,.col-more{display:flex;flex-direction:column;gap:16px}
 @media (max-width:380px){.big{font-size:2.9rem}.like b{font-size:1.1rem}}
 
@@ -167,6 +180,7 @@ footer{text-align:center;font-size:.75rem;color:var(--muted)}
   .col-b #paycard{order:-1}
 }
 </style>
+<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "f8a5f57283f848f98506014ed649211f"}'></script><!-- End Cloudflare Web Analytics -->
 </head>
 <body>
 <div class="app">
@@ -185,9 +199,13 @@ footer{text-align:center;font-size:.75rem;color:var(--muted)}
   <section class="card" aria-label="Item">
     <span class="label">What do you want to buy?</span>
     <input class="name-in" id="name" type="text" placeholder="Item name (optional)" value="New sneakers">
+    <div class="seg seg-sm" id="freq" role="group" aria-label="How often you pay">
+      <button data-v="once" class="on" type="button">One-time</button><button data-v="month" type="button">Every month</button><button data-v="year" type="button">Every year</button>
+    </div>
     <div class="price-row">
       <span id="sym">₱</span>
       <input id="price" type="number" inputmode="decimal" min="0" value="3499" aria-label="Item price">
+      <span class="per-lbl" id="perLbl" hidden></span>
       <select class="cur-sel" id="itemCur" aria-label="Currency of the item price"></select>
     </div>
     <div class="conv" id="conv" hidden>
@@ -206,6 +224,7 @@ footer{text-align:center;font-size:.75rem;color:var(--muted)}
     <div class="meter-scale"><span>1 hr</span><span>1 day</span><span>1 week</span><span>1 month</span></div>
     <span class="verdict" id="verdict">Sleep on it</span>
     <p class="tip" id="tip"></p>
+    <button class="share-btn" id="share" type="button">Share my result</button>
   </section>
 
   <section class="card">
@@ -215,6 +234,12 @@ footer{text-align:center;font-size:.75rem;color:var(--muted)}
   </section>
 
   <section class="card">
+    <h2>Cost per use</h2>
+    <div class="field"><label for="uses" id="usesLbl">How many times will you use it?</label><input id="uses" type="number" inputmode="numeric" min="1" step="1" placeholder="For example, 100"></div>
+    <p class="save-out" id="cpuOut"></p>
+  </section>
+
+  <section class="card" id="savecard">
     <h2>Save up for it</h2>
     <div class="save-row">
       <input type="range" id="saveDay" min="1" max="1000" step="1" value="100" aria-label="Amount saved per day">
@@ -282,6 +307,17 @@ footer{text-align:center;font-size:.75rem;color:var(--muted)}
     </ul>
   </section>
   </div>
+
+  <dialog id="shareDlg" aria-labelledby="shareTitle">
+    <h2 id="shareTitle">Share your result</h2>
+    <img id="shareImg" alt="Your HoursToPay result as an image">
+    <div class="dlg-btns">
+      <a class="add" id="dlImg" download="hourstopay-result.png" href="#">Download image</a>
+      <button class="chip-btn" id="copyLink" type="button">Copy link</button>
+      <button class="chip-btn" id="closeDlg" type="button">Close</button>
+    </div>
+    <p class="note">The image and link show the price and the time it takes, never your pay.</p>
+  </dialog>
 
   <footer>
     <nav class="foot-nav" aria-label="Footer"><a href="guides/index.html">Guides</a><a href="prices/index.html">Prices</a><a href="wages/index.html">Wages</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="contact.html">Contact</a></nav>
@@ -356,27 +392,57 @@ function setupSlider(){
   const keep=+s.value; s.max=max;s.step=step;s.min=step;
   if(!(keep>=step&&keep<=max))s.value=nice(max/7);
 }
+function fmtTimeText(hrs,h){
+  if(hrs<1)return `${Math.max(1,Math.round(hrs*60))} min`;
+  if(hrs<h*2){const H=Math.floor(hrs),M=Math.round((hrs-H)*60);return `${H} hr${M?` ${M} min`:""}`}
+  return `${(hrs/h).toFixed(1)} workdays`;
+}
+// How often the price is paid: once, every month or every year. Recurring costs are judged over a year.
+let freq="once";
+const PER_WORD={month:"a month",year:"a year"};
+function yearly(price){return freq==="month"?price*12:price}
+function recurringTip(hrsYear,h){
+  const days=hrsYear/h;
+  if(days<1)return"Less than a workday of pay a year. Fine if you use it often.";
+  if(days<5)return`That's ${days.toFixed(1)} workdays of pay every year. Check that you use it every week.`;
+  return"That's over a week of work every year. Is it worth that much to you?";
+}
+let last=null; // the latest result, used by Share my result
 function calc(){
-  const raw=+$("price").value||0, price=convert(raw,itemCur,my), {rate,h,d,pct}=hourly();
+  const raw=+$("price").value||0, price=convert(raw,itemCur,my), {rate,h,d,pct}=hourly(), rec=freq!=="once";
   $("basis").textContent=pct?`take-home ${+pct.toFixed(1)}%`:"gross pay";
+  $("perLbl").hidden=!rec;$("perLbl").textContent=rec?"/"+freq:"";
+  $("savecard").hidden=rec;
+  $("usesLbl").textContent=rec?`How many times will you use it ${freq==="month"?"each month":"each year"}?`:"How many times will you use it?";
   // conversion row
   const diff=itemCur!==my;$("conv").hidden=!diff;
   if(diff){$("convVal").textContent=money(price);$("rFrom").textContent=itemCur;$("rTo").textContent=my;
     if(document.activeElement!==$("rate"))$("rate").value=+(usdTo(my)/usdTo(itemCur)).toPrecision(6);}
-  if(!raw||!rate){$("big").textContent="–";$("line").textContent="Enter a price and set your pay.";renderWish();return}
-  const hrs=price/rate, days=hrs/h;
-  $("big").innerHTML=fmtTime(hrs,h);
-  $("line").innerHTML=`You ${pct?"take home":"earn"} <b>${money(rate)}</b>/hr${pct?" after tax":" before tax"}, so <b>${money(price)}</b> takes ${hrs<h?"part of a workday":`<b>${days.toFixed(1)}</b> workdays`} to earn.`;
-  const pos=Math.log(Math.max(hrs,1))/Math.log(h*d);
+  if(!raw||!rate){last=null;$("big").textContent="–";$("line").textContent="Enter a price and set your pay.";$("cpuOut").textContent="";renderWish();return}
+  const hrs=price/rate, cost=yearly(price), hrsY=cost/rate, days=hrsY/h;
+  $("big").innerHTML=fmtTime(hrsY,h)+(rec?"<small>a year</small>":"");
+  const earn=`You ${pct?"take home":"earn"} <b>${money(rate)}</b>/hr${pct?" after tax":" before tax"}`;
+  $("line").innerHTML=rec
+    ? `${earn}. <b>${money(price)}</b> ${PER_WORD[freq]} takes <b>${fmtTimeText(hrs,h)}</b> of work${freq==="month"?` every month, or <b>${money(cost)}</b> a year`:" every year"}.`
+    : `${earn}, so <b>${money(price)}</b> takes ${hrs<h?"part of a workday":`<b>${days.toFixed(1)}</b> workdays`} to earn.`;
+  const pos=Math.log(Math.max(hrsY,1))/Math.log(h*d);
   $("meter").style.setProperty("--w",Math.min(100,Math.max(3,pos*100))+"%");
-  const[t,c,tip]=verdict(hrs,h),v=$("verdict");v.textContent=t;v.style.setProperty("--v",c);$("tip").textContent=tip;
+  const[t,c,tip]=verdict(hrsY,h),v=$("verdict");v.textContent=t;v.style.setProperty("--v",c);$("tip").textContent=rec?recurringTip(hrsY,h):tip;
   v.style.transform="scale(1.08)";setTimeout(()=>v.style.transform="",160);
   const tea=+$("pTea").value||1,meal=+$("pMeal").value||1;
-  $("like").innerHTML=[["☕",price/tea,"coffees or milk teas"],["🍔",price/meal,"fast food meals"],["📅",days,"workdays"]]
+  $("like").innerHTML=[["☕",cost/tea,"coffees or milk teas"],["🍔",cost/meal,"fast food meals"],["📅",days,rec?"workdays a year":"workdays"]]
     .map(([i,n,l])=>`<div><span class="ico">${i}</span><b>${n<10?n.toFixed(1):Math.round(n).toLocaleString()}</b><span>${l}</span></div>`).join("");
-  const sd=+$("saveDay").value;$("saveAmt").textContent=`${money(sd)}/day`;
-  const n=Math.ceil(price/sd),date=new Date(Date.now()+n*864e5);
-  $("saveOut").innerHTML=`Save <b>${money(sd)}</b> a day and you can buy it in <b>${n.toLocaleString()} day${n>1?"s":""}</b>, around <b>${date.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</b>.`;
+  // cost per use: the price for one period divided by the uses in that period
+  const uses=Math.floor(+$("uses").value);
+  $("cpuOut").innerHTML=uses>0
+    ? `<b>${money(price/uses)}</b> per use. That's <b>${fmtTimeText(hrs/uses,h)}</b> of work each time you use it.`
+    : "Divide the price by how often you'll use it, like 100 wears for sneakers. Something you use every day can be worth more than it looks.";
+  if(!rec){
+    const sd=+$("saveDay").value;$("saveAmt").textContent=`${money(sd)}/day`;
+    const n=Math.ceil(price/sd),date=new Date(Date.now()+n*864e5);
+    $("saveOut").innerHTML=`Save <b>${money(sd)}</b> a day and you can buy it in <b>${n.toLocaleString()} day${n>1?"s":""}</b>, around <b>${date.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}</b>.`;
+  }
+  last={raw,cur:itemCur,rec,hrsY,h,verdict:t,color:c,name:$("name").value.trim()};
   if(!fromLink)store.set("pay",{net:$("net").value,pay:$("pay").value,hours:$("hours").value,days:$("days").value,pTea:$("pTea").value,pMeal:$("pMeal").value});
   renderWish();
 }
@@ -391,9 +457,33 @@ function renderWish(){
   $("count").textContent=`${wish.length} item${wish.length>1?"s":""}`;
 }
 
+// First visit: guess the visitor's currency from their time zone, then their browser language.
+// Example pay for a few currencies, as [amount, per]; others get the peso example converted.
+const PAY_EXAMPLE={USD:[20,"hour"],GBP:[15,"hour"],EUR:[16,"hour"],AUD:[32,"hour"],CAD:[25,"hour"],NZD:[28,"hour"],SGD:[15,"hour"],CHF:[32,"hour"],JPY:[1300,"hour"],KRW:[11000,"hour"],HKD:[70,"hour"],TWD:[220,"hour"]};
+const EURO="AT BE CY DE EE ES FI FR GR HR IE IT LT LU LV MT NL PT SI SK".split(" ");
+const REGION_CUR={US:"USD",PH:"PHP",GB:"GBP",JP:"JPY",AU:"AUD",CA:"CAD",SG:"SGD",IN:"INR",ID:"IDR",MY:"MYR",TH:"THB",VN:"VND",KR:"KRW",CN:"CNY",HK:"HKD",AE:"AED",SA:"SAR",NZ:"NZD",MX:"MXN",BR:"BRL",ZA:"ZAR",NG:"NGN",CH:"CHF",TW:"TWD"};
+const TZ_REGION={"Asia/Manila":"PH","Asia/Tokyo":"JP","Asia/Singapore":"SG","Asia/Kolkata":"IN","Asia/Calcutta":"IN","Asia/Jakarta":"ID","Asia/Kuala_Lumpur":"MY","Asia/Bangkok":"TH","Asia/Ho_Chi_Minh":"VN","Asia/Saigon":"VN","Asia/Seoul":"KR","Asia/Shanghai":"CN","Asia/Hong_Kong":"HK","Asia/Dubai":"AE","Asia/Riyadh":"SA","Pacific/Auckland":"NZ","Europe/London":"GB","Europe/Zurich":"CH","Asia/Taipei":"TW","Africa/Lagos":"NG","Africa/Johannesburg":"ZA","America/Mexico_City":"MX","America/Sao_Paulo":"BR","America/Toronto":"CA","America/Vancouver":"CA","America/Edmonton":"CA","America/Winnipeg":"CA","America/Halifax":"CA","America/New_York":"US","America/Chicago":"US","America/Denver":"US","America/Los_Angeles":"US","America/Phoenix":"US","America/Anchorage":"US","Pacific/Honolulu":"US","Europe/Berlin":"DE","Europe/Paris":"FR","Europe/Madrid":"ES","Europe/Rome":"IT","Europe/Amsterdam":"NL","Europe/Brussels":"BE","Europe/Vienna":"AT","Europe/Dublin":"IE","Europe/Lisbon":"PT","Europe/Helsinki":"FI","Europe/Athens":"GR"};
+const LANG_CUR={fil:"PHP",tl:"PHP",ja:"JPY",ko:"KRW",th:"THB",vi:"VND",id:"IDR",ms:"MYR"};
+const regionCur=r=>r&&(EURO.includes(r)?"EUR":REGION_CUR[r]);
+function guessCurrency(){
+  try{const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;if(tz.startsWith("Australia/"))return"AUD";const c=regionCur(TZ_REGION[tz]);if(c)return c}catch{}
+  for(const l of navigator.languages||[navigator.language||""]){const [lang,reg]=l.split("-");const c=regionCur((reg||"").toUpperCase())||LANG_CUR[lang];if(c)return c}
+  return null;
+}
+
 // init
 fillSelects();
 const saved=store.get("pay",null);
+if(!saved&&store.get("cur",null)===null&&!(+new URLSearchParams(location.search).get("pay")>0)){
+  const g=guessCurrency();
+  if(g&&g!==my){
+    const ex=PAY_EXAMPLE[g];
+    $("pay").value=ex?ex[0]:nice(convert(+$("pay").value||700,my,g));
+    if(ex){per=ex[1]}
+    $("price").value=presetsFor(g)[2][2];
+    my=itemCur=g;applyCurrencyDefaults(g);$("myCur").value=g;$("itemCur").value=g;
+  }
+}
 if(saved){["pay","net","hours","days","pTea","pMeal"].forEach(k=>{if(saved[k]!=null)$(k).value=saved[k]})}
 // Links from the content pages can prefill the calculator: ?price=69990&cur=PHP&item=iPhone+17&pay=755&per=day&hours=8
 // Pay from a link is not saved over the visitor's own settings unless they edit it.
@@ -403,14 +493,17 @@ let fromLink=false;
   if(qp>0){fromLink=true;$("pay").value=qp;$("net").value="";if(["hour","day","month"].includes(q.get("per")))per=q.get("per");if(qh>0&&qh<=24)$("hours").value=qh}
   if(+q.get("price")>0)$("price").value=+q.get("price");
   if(q.get("item"))$("name").value=q.get("item").slice(0,60);
+  if(["month","year"].includes(q.get("every")))freq=q.get("every");
   $("myCur").value=my;$("itemCur").value=itemCur;}
 $("paycard").addEventListener("input",()=>{fromLink=false},true);
 document.querySelectorAll("#seg button").forEach(b=>b.classList.toggle("on",b.dataset.v===per));
+document.querySelectorAll("#freq button").forEach(b=>b.classList.toggle("on",b.dataset.v===freq));
 setCurrencyUI();renderPresets();setupSlider();calc();
 
-["price","pTea","pMeal","saveDay"].forEach(id=>$(id).addEventListener("input",calc));
+["price","pTea","pMeal","saveDay","uses","name"].forEach(id=>$(id).addEventListener("input",calc));
 ["pay","net","hours","days"].forEach(id=>$(id).addEventListener("input",()=>{setupSlider();calc()}));
 $("presets").addEventListener("click",e=>{const b=e.target.closest("button");if(b){$("price").value=b.dataset.p;$("name").value=b.dataset.n;calc()}});
+$("freq").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;freq=b.dataset.v;document.querySelectorAll("#freq button").forEach(x=>x.classList.toggle("on",x===b));calc()});
 $("seg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;per=b.dataset.v;store.set("per",per);document.querySelectorAll("#seg button").forEach(x=>x.classList.toggle("on",x===b));setCurrencyUI();setupSlider();calc()});
 $("myCur").addEventListener("change",e=>{
   const old=my;my=e.target.value;store.set("cur",my);
@@ -422,9 +515,79 @@ $("myCur").addEventListener("change",e=>{
 $("itemCur").addEventListener("change",e=>{itemCur=e.target.value;setCurrencyUI();renderPresets();calc()});
 $("rate").addEventListener("input",e=>{const r=+e.target.value;if(r>0){custom[my]=usdTo(itemCur)*r;store.set("rates",custom);calc()}});
 $("rateReset").addEventListener("click",()=>{delete custom[my];delete custom[itemCur];store.set("rates",custom);$("rate").blur();calc()});
-$("add").addEventListener("click",()=>{const p=+$("price").value;if(!p)return;wish.push({n:$("name").value.trim()||"Item",p,c:itemCur});store.set("wish",wish);renderWish();$("add").textContent="✓ Added";setTimeout(()=>$("add").textContent="+ Add this to my wishlist",1200)});
+$("add").addEventListener("click",()=>{const p=+$("price").value;if(!p)return;const n=$("name").value.trim()||"Item";
+  // a recurring cost goes on the wishlist as one year of payments
+  wish.push(freq==="once"?{n,p,c:itemCur}:{n:n+" (1 year)",p:yearly(p),c:itemCur});store.set("wish",wish);renderWish();$("add").textContent="✓ Added";setTimeout(()=>$("add").textContent="+ Add this to my wishlist",1200)});
 $("list").addEventListener("click",e=>{const b=e.target.closest("button[data-i]");if(b){wish.splice(+b.dataset.i,1);store.set("wish",wish);renderWish()}});
 $("toPay").addEventListener("click",()=>$("paycard").scrollIntoView({behavior:"smooth"}));
+
+// Share my result: draws a 1080×1350 image of the result and shares it with a link that opens
+// the calculator at the same price. Neither includes the visitor's pay.
+const VCOLOR={"var(--ok)":"#22a06b","var(--sun)":"#ffd23f","var(--warn)":"#e8a317","var(--accent)":"#ff7a3d"};
+function shareLink(){
+  const q=new URLSearchParams({price:last.raw,cur:last.cur});
+  if(last.name)q.set("item",last.name);
+  if(freq!=="once")q.set("every",freq);
+  return location.href.split(/[?#]/)[0]+"?"+q;
+}
+function timeTokens(hrs,h){ // [text, isNumber] pairs, so numbers can be drawn bigger than units
+  if(hrs<1)return[[String(Math.max(1,Math.round(hrs*60))),1],[" min",0]];
+  if(hrs<h*2){const H=Math.floor(hrs),M=Math.round((hrs-H)*60);return[[String(H),1],[" hr",0]].concat(M?[[" "+M,1],[" min",0]]:[])}
+  return[[(hrs/h).toFixed(1),1],[" workdays",0]];
+}
+function roundRect(x,c,y,w,hh,r){x.beginPath();x.moveTo(c+r,y);x.arcTo(c+w,y,c+w,y+hh,r);x.arcTo(c+w,y+hh,c,y+hh,r);x.arcTo(c,y+hh,c,y,r);x.arcTo(c,y,c+w,y,r);x.closePath()}
+function fitText(x,text,font,size,max){x.font=`${font.replace("SIZE",size)}`;while(x.measureText(text).width>max&&size>20){size-=2;x.font=font.replace("SIZE",size)}return size}
+async function drawShare(){
+  const D="'Bricolage Grotesque','Inter',system-ui,sans-serif",B="'Manrope','Inter',system-ui,sans-serif",M="'JetBrains Mono',ui-monospace,monospace";
+  try{await Promise.all([`800 100px ${D}`,`700 40px ${B}`,`700 40px ${M}`].map(f=>document.fonts.load(f)))}catch{}
+  const W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
+  x.fillStyle="#e7f2ee";x.fillRect(0,0,W,H);
+  const g=x.createRadialGradient(140,1250,0,140,1250,420);g.addColorStop(0,"rgba(255,210,63,.5)");g.addColorStop(1,"rgba(255,210,63,0)");x.fillStyle=g;x.fillRect(0,0,W,H);
+  // brand
+  x.save();x.translate(122,132);x.rotate(-6*Math.PI/180);x.fillStyle="#ffd23f";roundRect(x,-38,-38,84,84,22);x.fill();x.fillStyle="#ff7a3d";roundRect(x,-44,-44,84,84,22);x.fill();
+  x.strokeStyle="#fff";x.lineWidth=9;x.lineCap="round";x.beginPath();x.moveTo(-2,-24);x.lineTo(-2,0);x.lineTo(14,11);x.stroke();x.restore();
+  x.fillStyle="#0f2e2a";x.font=`800 54px ${D}`;x.textBaseline="middle";x.fillText("HoursToPay",190,134);
+  // result card
+  const cx=72,cy=240,cw=W-144,ch=820;
+  x.fillStyle="#0f3d36";roundRect(x,cx,cy,cw,ch,48);x.fill();
+  x.save();roundRect(x,cx,cy,cw,ch,48);x.clip();const g2=x.createRadialGradient(cx+cw-40,cy+40,0,cx+cw-40,cy+40,320);g2.addColorStop(0,"rgba(255,210,63,.35)");g2.addColorStop(1,"rgba(255,210,63,0)");x.fillStyle=g2;x.fillRect(cx,cy,cw,ch);x.restore();
+  const px=cx+64;x.textBaseline="alphabetic";
+  x.fillStyle="#a9cfc5";x.font=`700 30px ${B}`;x.fillText((last.rec?"PAYING FOR THIS COSTS ME":"THIS WOULD COST ME").split("").join(String.fromCharCode(8202)),px,cy+110);
+  const name=(last.name||"This").slice(0,40);fitText(x,name,`800 SIZEpx ${D}`,72,cw-128);x.fillStyle="#f3fbf8";x.fillText(name,px,cy+210);
+  const priceTxt=money(last.raw,last.cur)+(last.rec?" "+PER_WORD[freq]:"");x.font=`700 44px ${M}`;x.fillStyle="#d6ece6";x.fillText(priceTxt,px,cy+280);
+  // big time
+  const toks=timeTokens(last.hrsY,last.h).concat(last.rec?[[" a year",0]]:[]);let big=210,small=64;
+  const width=()=>toks.reduce((w,[t,n])=>{x.font=n?`800 ${big}px ${D}`:`600 ${small}px ${B}`;return w+x.measureText(t).width},0);
+  while(width()>cw-128&&big>90){big-=8;small=Math.round(big*.3)}
+  let tx=px;for(const[t,n]of toks){x.font=n?`800 ${big}px ${D}`:`600 ${small}px ${B}`;x.fillStyle=n?"#f3fbf8":"#a9cfc5";x.fillText(t,tx,cy+520);tx+=x.measureText(t).width}
+  x.fillStyle="#a9cfc5";x.font=`600 34px ${B}`;x.fillText("of work",px,cy+590);
+  // verdict pill
+  x.font=`800 40px ${D}`;const vw=x.measureText(last.verdict).width+100;x.fillStyle=VCOLOR[last.color]||"#e8a317";roundRect(x,px,cy+650,vw,84,42);x.fill();
+  x.fillStyle="rgba(16,34,31,.6)";x.beginPath();x.arc(px+40,cy+692,9,0,7);x.fill();x.fillStyle="#10221f";x.textBaseline="middle";x.fillText(last.verdict,px+64,cy+694);
+  // footer
+  x.textBaseline="alphabetic";x.fillStyle="#0f2e2a";x.font=`800 50px ${D}`;x.fillText("How long would it take you?",72,1170);
+  x.fillStyle="#c4501a";x.font=`700 40px ${M}`;x.fillText("hourstopay.com",72,1240);
+  return new Promise(r=>cv.toBlob(r,"image/png"));
+}
+$("share").addEventListener("click",async()=>{
+  if(!last)return;
+  const btn=$("share");btn.disabled=true;
+  try{
+    const blob=await drawShare(),file=new File([blob],"hourstopay-result.png",{type:"image/png"}),url=shareLink();
+    const text=`${last.name||"This"} would cost me ${fmtTimeText(last.hrsY,last.h)}${last.rec?" a year":""} of work. How long would it take you?`;
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],text:text+" "+url});return}catch(e){if(e.name==="AbortError")return}
+    }
+    const src=URL.createObjectURL(blob);$("shareImg").src=src;$("dlImg").href=src;$("copyLink").dataset.url=url;$("copyLink").dataset.text=text;
+    $("copyLink").textContent="Copy link";$("shareDlg").showModal();
+  }finally{btn.disabled=false}
+});
+$("copyLink").addEventListener("click",async e=>{
+  const b=e.currentTarget;
+  try{await navigator.clipboard.writeText(b.dataset.text+" "+b.dataset.url);b.textContent="✓ Copied"}catch{prompt("Copy this link:",b.dataset.url)}
+});
+$("closeDlg").addEventListener("click",()=>$("shareDlg").close());
+$("shareDlg").addEventListener("click",e=>{if(e.target===e.currentTarget)$("shareDlg").close()});
 
 // Live exchange rates: use a copy cached for 12 hours, else fetch; the built-in rates stay as the fallback
 function useRates(data){
