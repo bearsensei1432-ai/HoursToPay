@@ -10,6 +10,8 @@ The site is plain HTML files with no build step, so any free static host can ser
 - `wages/` holds minimum wage pages for those four countries and salary-to-hourly pages (₱15,000 to ₱50,000 a month, $30,000 to $100,000 a year).
 - `sitemap.xml`, `robots.txt` and every page's canonical and share-image tags assume the site will live at hourstopay.com. If it lives somewhere else, change `BASE` in `make_pages.py`, regenerate, and update `index.html`, `sitemap.xml` and `robots.txt` by hand.
 - `share.png` is the picture shown when a link is shared on Facebook, X, Messenger and similar apps. `apple-touch-icon.png` is the icon used when someone adds the site to an iPhone home screen. The share image's source is `share-image.html` in the tools folder.
+- `ads.txt` tells ad buyers that Google AdSense account pub-1870666721014745 may sell ads on this site. `CNAME` tells GitHub Pages to serve the site at hourstopay.com; don't delete it.
+- Every page loads Cloudflare Web Analytics and the AdSense code from `BEACON` and `ADSENSE` in `make_pages.py`. `index.html` has its own copy of both in its `<head>`.
 - `content-plan.md` lists what to publish next. It is a note for you and does not need to be uploaded.
 
 The calculator can be opened prefilled from a link, for example `index.html?price=69990&cur=PHP&item=iPhone+17&pay=755&per=day&hours=8`. Pay that comes from a link isn't saved over the visitor's own settings.
